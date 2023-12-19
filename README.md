@@ -497,4 +497,78 @@ iptables -A INPUT -p tcp --dport 80 -j DROP
 
 Dapat dilihat bahwa TurkRegion Behasil mengakses webserver disaat tanggal telah diatur berada pada masa pemilu.
 
+### No 6
+Lalu, karena ternyata terdapat beberapa waktu di mana network administrator dari WebServer tidak bisa stand by, sehingga perlu ditambahkan rule bahwa akses pada hari Senin - Kamis pada jam 12.00 - 13.00 dilarang (istirahat maksi cuy) dan akses di hari Jumat pada jam 11.00 - 13.00 juga dilarang (maklum, Jumatan rek).
+
+### Answer
+Nomor 6 dapat diselesaikan dengan menambahkan rules setelah nomer 5 menggunakan syntax berikut:
+
+```bash
+iptables -A INPUT -p tcp --dport 22 -s 192.175.8.0/22 -m time --timestart 12:00 --timestop 13:00 --weekdays Mon,Tue,Wed,Thu -j DROP
+
+iptables -A INPUT -p tcp --dport 22 -s 192.175.8.0/22 -m time --timestart 11:00 --timestop 13:00 --weekdays Fri -j DROP
+```
+### Description
+Menolak koneksi SSH pada hari Senin hingga Kamis dari pukul 12:00 hingga 13:00 untuk rentang IP 192.175.8.0/22:
+
+`iptables -A INPUT`: Menambahkan aturan pada chain INPUT (penerimaan paket masuk).
+`-p tcp`: Menentukan bahwa aturan ini hanya berlaku untuk koneksi TCP.
+`--dport 22`: Spesifik untuk koneksi yang menuju ke port 22 (port standar SSH).
+`-s 192.175.8.0/22`: Menentukan rentang alamat IP sumber yang diizinkan (dalam hal ini, dari 192.175.8.0 hingga 192.175.11.255).
+`-m time --timestart 12:00 --timestop 13:00 --weekdays Mon,Tue,Wed,Thu`: Menggunakan modul time untuk menentukan rentang waktu (mulai dari pukul 12:00 hingga 13:00) dan hari kerja (Senin hingga Kamis).
+`-j DROP`: Menolak paket yang memenuhi kriteria di atas.
+
+- Menolak koneksi SSH pada hari Jumat dari pukul 11:00 hingga 13:00 untuk rentang IP 192.175.8.0/22:
+
+`iptables -A INPUT`: Menambahkan aturan pada chain INPUT.
+`-p tcp`: Menentukan bahwa aturan ini hanya berlaku untuk koneksi TCP.
+`--dport 22`: Spesifik untuk koneksi yang menuju ke port 22.
+`-s 192.175.8.0/22`: Menentukan rentang alamat IP sumber yang diizinkan.
+`-m time --timestart 11:00 --timestop 13:00 --weekdays Fri`: Menggunakan modul time untuk menentukan rentang waktu (mulai dari pukul 11:00 hingga 13:00) dan hari Jumat.
+`-j DROP`: Menolak paket yang memenuhi kriteria di atas.
+
+### Testing
+Testing dapat dilakukan dengan merubah date dari node lain lalu nc ke webserver. Berikut adalah hasil testing yang telah dilakukan:
+
+![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/d1ac792d-1217-4318-ab35-af2ba6fe73da)
+
+![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/3ba14802-2aa8-4c83-9609-035b5943ff4d)
+
+![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/69a3a3a2-bbd5-41fd-9e99-976de1937b38)
+
+Dapat dilihat bahwa koneksi yang berasal dari GrobeForest bisa diterima, sedangkan dari Laubhills akan terkena refused sesuai rules yang telah ditetapkan.
+
+### No 7
+Karena terdapat 2 WebServer, kalian diminta agar setiap client yang mengakses Sein dengan Port 80 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan dan request dari client yang mengakses Stark dengan port 443 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan.
+
+### Answer
+Soal nomor 7 dapat diseleseaika dengan mengaktifkan rules pada iptables di router yang terhubung dengan webserver, salah satunya adalah heiter. Berikut adalah syntax yang digunakan untuk menyelesaikan nomor 7:
+
+```bash
+iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.175.8.2 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.175.8.2
+
+iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.175.8.2 -j DNAT --to-destination 192.175.14.142
+
+iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.175.14.142 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.175.14.142
+
+iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.175.14.142 -j DNAT --to-destination 192.175.8.2
+```
+
+### Testing
+Kemudian dapat dilakukan testing dengan cara membuka koneksi pada webserver yaitu sein dan stark dengan syntax berikut untuk port 80 
+```bash
+while true; do nc -l -p 80 -c 'echo "ini sein"'; done
+dan
+while true; do nc -l -p 80 -c 'echo "ini stark"'; done.
+```
+
+Sedangkan untuk port 443 dapat menggunakan syntax 
+```bash
+while true; do nc -l -p 443 -c 'echo "ini sein"'; done
+dan
+while true; do nc -l -p 443 -c 'echo "ini stark"'; done
+````
+Berikut adalah hasil testing yang dilakukan:  
+
+![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/f977e518-f624-4b09-9c1e-10a1f52ac1b0)
 
