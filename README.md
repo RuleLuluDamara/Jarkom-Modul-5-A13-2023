@@ -9,10 +9,12 @@
 
 ## Topologi
 Berikut merupakan topologi yang digunakan:
+
 ![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/96402671-6bf0-4dcb-a000-4c8bbe81e049)
 
 ## Pembagian Subnet
 Berikut merupakan Pembagian subnet yang digunakan:
+
 ![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/2e8525ff-eeab-40c0-99d7-dc39c9b5e876)
 
 ## Prefix IP
@@ -20,11 +22,13 @@ Prefix IP yang digunakan adalah ```bash 192.175.x.x```
 
 ## Tree
 Berikut merupakan tree yang digunakan:
+
 ![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/317f64f5-3527-4b07-b2d8-f7e02d6ed9db)
 
 
 ## Pembagian IP 
 Berikut merupakan Ppemabgian IP yang digunakan:
+
 ![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/48e4bb56-085d-491d-b3d4-bee39e6f460e)
 
 ## Konfigurasi Node
@@ -346,32 +350,86 @@ OPTIONS=""
 
 ## SOAL
 
-### Nomor 1
+### No 1
 
 Agar topologi yang kalian buat dapat mengakses keluar, kalian diminta untuk mengkonfigurasi Aura menggunakan iptables, tetapi tidak ingin menggunakan MASQUERADE.
 
-### Jawaban
+### Answer
 
-Pada node Aura, konfigurasi iptables
+Berikut adalah konfigurasi iptables pada Aura yang mencakup pengaturan agar topologi dapat mengakses keluar tanpa menggunakan MASQUERADE
 ```bash
-  iptables -t nat -A POSTROUTING -s 192.175.0.0/20 -o eth0 -j SNAT --to-source 192.168.122._
+ETH0_IP=$(ip -4 addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to-source $ETH0_IP
 ```
 
+### Description
+
+- `ETH0_IP=$(ip -4 addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')` untuk mengambil alamat IP dari antarmuka eth0 dan menyimpannya dalam variabel `$ETH0_IP`.
+- `iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to-source $ETH0_IP` untuk menambahkan aturan ke tabel NAT untuk melakukan SNAT (Source NAT) pada koneksi keluar melalui antarmuka eth0. Ini memastikan bahwa paket yang keluar memiliki alamat sumber yang sesuai dengan alamat IP antarmuka `eth0`.
+
 ### Testing
+Setiap route akan berhasil melakukan ping keluar, disini saya buktikan dengan melakuakn ping pada salah satu server yaitu Stark.
+
+![Screenshot 2023-12-19 210412](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/8e222bc6-7add-4eaf-af7d-56ea1b55076e)
 
 
-### Nomor 2
+### No 2
 
 Kalian diminta untuk melakukan drop semua TCP dan UDP kecuali port 8080 pada TCP
 
-### Jawaban
+### Answer
+Berikut adalah syntax yang disimpan pada no2.sh GrobeForest(client) untuk melakukan drop semua TCP dan UDP kecuali port 8080 pada TCP. 
+```bash
+# Izinkan koneksi ke port 8080
+iptables -F
+
+iptables -A INPUT -p icmp -j ACCEPT
+
+iptables -A INPUT -p tcp --dport 8080 -j ACCEPT
+
+iptables -A INPUT -p tcp -j DROP
+
+iptables -A INPUT -p udp -j DROP
+```
+
+### Description
+- `iptables -A INPUT -p tcp --dport 8080 -j ACCEPT` mengizinkan koneksi ke port 8080 menggunakan protokol TCP. Ini berarti paket yang menuju ke port 8080 dengan protokol TCP akan diterima.
+
+- `iptables -A INPUT -p tcp ! --dport 8080 -j DROP` menolak koneksi untuk semua port selain 8080 menggunakan protokol TCP. Ini berarti paket yang menuju ke port apa pun selain 8080 dengan protokol TCP akan ditolak.
+
+- `iptables -A INPUT -p udp -j DROP` menolak semua koneksi yang menggunakan protokol UDP. Ini berarti paket dengan protokol UDP akan ditolak, tidak memperhatikan port tujuan.
+
+### Testing
+- Testing port 8080 pada TCP (berhasil)
+  
+![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/b527f970-8087-415d-b9d0-f6777fd7f5f1)
+![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/264a4a9e-2496-4b7f-98e7-7ac67ea9b203)
+
+- Testing kecuali port 8080 pada TCP (tidak berhasil)
+![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/42440d84-9194-4ba4-b632-52631aba0f1c)
+![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/91b68426-f58f-4a5c-9bb7-c25c8eab04af)
 
 
-### Nomor 3
-
+### No 3
 Kepala Suku North Area meminta kalian untuk membatasi DHCP dan DNS Server hanya dapat dilakukan ping oleh maksimal 3 device secara bersamaan, selebihnya akan di drop.
 
-### Jawaban
+### Answer
+Berikut adalah syntax yang disimpan pada no2.sh GrobeForest(client) untuk melakukan drop semua TCP dan UDP kecuali port 8080 pada TCP. 
+
+```bash
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -A INPUT -p icmp -m connlimit --connlimit-above 3 --connlimit-mask 0 -j DROP
+```
+
+### Description
+- `iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT` Menambahkan aturan ke chain INPUT untuk mengizinkan koneksi yang terkait dengan koneksi yang sudah ada (ESTABLISHED) atau terkait dengan koneksi yang masih berlangsung (RELATED).
+- `iptables -A INPUT -p icmp -m connlimit --connlimit-above 3 --connlimit-mask 0 -j DROP` Menambahkan aturan ke chain INPUT untuk membatasi jumlah koneksi ICMP (ping) yang diterima. Aturan ini akan menolak paket ICMP jika jumlah koneksi dari satu alamat IP melebihi 3 secara bersamaan
+
+### Testing
+- Berikut pembuktian pada DHCP Server (Revolte)
+![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/d606708a-ba58-4913-8849-c22e8a0832c0)
+
+Dapat dilihat bahwa node keempat yang melakukan ping akan gagal dan tidak bisa tersambung dengan node tujuan.
 
 
 ### Nomor 4
