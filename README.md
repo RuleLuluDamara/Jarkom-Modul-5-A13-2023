@@ -5,6 +5,7 @@
 | No. | Anggota               | NRP          |
 |-----|----------------------------|--------------|
 | 1   | Rule Lulu Damara           | 5025211050   |
+| 2   | Aida Fitrania Prabasati    | 5025211033	  |
 
 ## Topologi
 Berikut merupakan topologi yang digunakan:
