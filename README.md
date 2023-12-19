@@ -460,49 +460,41 @@ Izinkan koneksi TCP ke port 22 dari rentang alamat IP 192.175.8.3-192.175.11.254
 `-j DROP`: Menolak paket yang memenuhi kriteria di atas.
 
 ### Testing
-- Berikut pembuktian pada DHCP Server (Revolte)
-![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/d606708a-ba58-4913-8849-c22e8a0832c0)
+![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/dc665aa5-cf2b-4096-aa13-4ff1d797fc2c)
 
-Dapat dilihat bahwa node keempat yang melakukan ping akan gagal dan tidak bisa tersambung dengan node tujuan.
+![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/8f6c0f7b-c417-438c-b767-cbdf629b8f9e)
 
-### Nomor 5
-
+### No 5
 Selain itu, akses menuju WebServer hanya diperbolehkan saat jam kerja yaitu Senin-Jumat pada pukul 08.00-16.00.
 
-### Jawaban
+### Answer
+Berikut adalah syntax pada WebServer agar akses yang menuju WebServer dibatasi saat jam kerja pukul 08.00-16.00.
+```bash
+iptables -A INPUT -p tcp --dport 80 -m time --timestart 08:00 --timestop 16:00 --weekdays Mon,Tue,Wed,Thu,Fri -j ACCEPT
+iptables -A INPUT -p tcp --dport 80 -j DROP
+```
+### Description
+
+- Izinkan koneksi TCP ke port 80 pada rentang waktu tertentu pada hari kerja (Senin-Jumat) antara pukul 08:00 dan 16:00:
+
+- `iptables -A INPUT`: Menambahkan aturan pada chain INPUT (penerimaan paket masuk).
+`-p tcp`: Menentukan bahwa aturan ini hanya berlaku untuk koneksi TCP.
+`--dport 80`: Spesifik untuk koneksi yang menuju ke port 80 (port standar HTTP).
+```-m time --timestart 08:00 --timestop 16:00 --weekdays Mon,Tue,Wed,Thu,Fri```: Menggunakan modul time untuk menentukan rentang waktu (mulai dari pukul 08:00 hingga 16:00) dan hari kerja (Senin hingga Jumat).
+`-j ACCEPT`: Mengizinkan paket yang memenuhi kriteria di atas.
+
+- Tolak koneksi TCP ke port 80 di luar rentang waktu yang diizinkan:
+
+`iptables -A INPUT`: Menambahkan aturan pada chain INPUT.
+`-p tcp`: Menentukan bahwa aturan ini hanya berlaku untuk koneksi TCP.
+`--dport 80`: Spesifik untuk koneksi yang menuju ke port 80.
+`-j DROP`: Menolak paket yang memenuhi kriteria di atas.
+
+### Testing
+- Jam Malam `date 121319002023.00` dan Jam Siang `date 121313002023.00`
+  
+![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/00d4c6b7-0428-4005-8e80-c4a707ce7ee1)
+
+Dapat dilihat bahwa TurkRegion Behasil mengakses webserver disaat tanggal telah diatur berada pada masa pemilu.
 
 
-### Nomor 6
-
-Lalu, karena ternyata terdapat beberapa waktu di mana network administrator dari WebServer tidak bisa stand by, sehingga perlu ditambahkan rule bahwa akses pada hari Senin - Kamis pada jam 12.00 - 13.00 dilarang (istirahat maksi cuy) dan akses di hari Jumat pada jam 11.00 - 13.00 juga dilarang (maklum, Jumatan rek).
-
-### Jawaban
-
-
-### Nomor 7
-
-Karena terdapat 2 WebServer, kalian diminta agar setiap client yang mengakses Sein dengan Port 80 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan dan request dari client yang mengakses Stark dengan port 443 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan.
-
-### Jawaban
-
-
-### Nomor 8
-
-Karena berbeda koalisi politik, maka subnet dengan masyarakat yang berada pada Revolte dilarang keras mengakses WebServer hingga masa pencoblosan pemilu kepala suku 2024 berakhir. Masa pemilu (hingga pemungutan dan penghitungan suara selesai) kepala suku bersamaan dengan masa pemilu Presiden dan Wakil Presiden Indonesia 2024.
-
-### Jawaban
-
-
-### Nomor 9
-
-Sadar akan adanya potensial saling serang antar kubu politik, maka WebServer harus dapat secara otomatis memblokir  alamat IP yang melakukan scanning port dalam jumlah banyak (maksimal 20 scan port) di dalam selang waktu 10 menit. 
-(clue: test dengan nmap)
-
-### Jawaban
-
-
-### Nomor 10
-
-Karena kepala suku ingin tau paket apa saja yang di-drop, maka di setiap node server dan router ditambahkan logging paket yang di-drop dengan standard syslog level. 
-
-### Jawaban
