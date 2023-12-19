@@ -431,13 +431,39 @@ iptables -A INPUT -p icmp -m connlimit --connlimit-above 3 --connlimit-mask 0 -j
 
 Dapat dilihat bahwa node keempat yang melakukan ping akan gagal dan tidak bisa tersambung dengan node tujuan.
 
+### No 4
+Lakukan pembatasan sehingga koneksi SSH pada Web Server hanya dapat dilakukan oleh masyarakat yang berada pada GrobeForest.
 
-### Nomor 4
+### Answer
+Berikut adalah syntax pada WebServer agar koneksi SSH terbatas. 
 
-Lakukan pembatasan sehingga koneksi SSH pada Web Server hanya dapat dilakukan oleh masyarakat yang berada pada GrobeForest
+```bash
+iptables -A INPUT -p tcp --dport 22 -m iprange --src-range 192.175.8.3-192.175.11.254 -j ACCEPT
+iptables -A INPUT -p tcp --dport 22 -j DROP
+```
 
-### Jawaban
+### Description
 
+Izinkan koneksi TCP ke port 22 dari rentang alamat IP 192.175.8.3-192.175.11.254:
+
+- `iptables -A INPUT`: Menambahkan aturan pada chain INPUT (penerimaan paket masuk).
+`-p tcp`: Menentukan bahwa aturan ini hanya berlaku untuk koneksi TCP.
+`--dport 22`: Spesifik untuk koneksi yang menuju ke port 22 (port standar SSH).
+`-m iprange --src-range 192.175.8.3-192.175.11.254`: Menggunakan modul iprange untuk menentukan rentang alamat IP yang diizinkan (dalam hal ini, dari 192.175.8.3 hingga 192.175.11.254).
+`-j ACCEPT`: Mengizinkan paket yang memenuhi kriteria di atas.
+
+- Tolak koneksi TCP ke port 22 dari sumber yang tidak termasuk dalam rentang di atas:
+
+`iptables -A INPUT`: Menambahkan aturan pada chain INPUT.
+`-p tcp`: Menentukan bahwa aturan ini hanya berlaku untuk koneksi TCP.
+`--dport 22`: Spesifik untuk koneksi yang menuju ke port 22.
+`-j DROP`: Menolak paket yang memenuhi kriteria di atas.
+
+### Testing
+- Berikut pembuktian pada DHCP Server (Revolte)
+![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/d606708a-ba58-4913-8849-c22e8a0832c0)
+
+Dapat dilihat bahwa node keempat yang melakukan ping akan gagal dan tidak bisa tersambung dengan node tujuan.
 
 ### Nomor 5
 
