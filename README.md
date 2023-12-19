@@ -572,3 +572,23 @@ Berikut adalah hasil testing yang dilakukan:
 
 ![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/f977e518-f624-4b09-9c1e-10a1f52ac1b0)
 
+### No 8
+Karena berbeda koalisi politik, maka subnet dengan masyarakat yang berada pada Revolte dilarang keras mengakses WebServer hingga masa pencoblosan pemilu kepala suku 2024 berakhir. Masa pemilu (hingga pemungutan dan penghitungan suara selesai) kepala suku bersamaan dengan masa pemilu Presiden dan Wakil Presiden Indonesia 2024.
+
+### Answer
+Nomor 8 dapat diselesaikan dengan menambahkan rules pada webserver menggunakan syntax berikut:
+```bash
+Revolte_Subnet="192.175.0.0/30"
+
+Pemilu_Start=$(date -d "2023-10-19T00:00" +"%Y-%m-%dT%H:%M")
+
+Pemilu_End=$(date -d "2024-02-15T00:00" +"%Y-%m-%dT%H:%M")
+
+iptables -A INPUT -p tcp -s $Revolte_Subnet --dport 80 -m time --datestart "$Pemilu_Start" --datestop "$Pemilu_End" -j DROP
+```
+### Testing
+Untuk melakukan testing nomor 8 dapat dilakukan dengan merubah date sesuai yang diminta pada soal. Berikut adalah hasil testing dari syntax tersebut:
+
+![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/e9d402c4-1e41-43a2-90c7-b053f8abedd7)
+
+Dapat dilihat bahwa Revolte fail saat mengakses webserver sedangkan GrobeForest berhasil disaat tanggal telah diatur berada pada masa pemilu.
