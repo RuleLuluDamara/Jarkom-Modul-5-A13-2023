@@ -592,3 +592,68 @@ Untuk melakukan testing nomor 8 dapat dilakukan dengan merubah date sesuai yang 
 ![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/e9d402c4-1e41-43a2-90c7-b053f8abedd7)
 
 Dapat dilihat bahwa Revolte fail saat mengakses webserver sedangkan GrobeForest berhasil disaat tanggal telah diatur berada pada masa pemilu.
+
+### No 9
+Sadar akan adanya potensial saling serang antar kubu politik, maka WebServer harus dapat secara otomatis memblokir alamat IP yang melakukan scanning port dalam jumlah banyak (maksimal 20 scan port) di dalam selang waktu 10 menit. (clue: test dengan nmap).
+
+### Answer
+Untuk menyelesaikan soal nomor 9, kita perlu melakukan konfigurasi iptables pada setiap webserver, yaitu Sein dan Stark.
+```bash
+iptables -N scan_port
+
+iptables -A INPUT -m recent --name scan_port --update --seconds 600 --hitcount 20 -j DROP
+
+iptables -A FORWARD -m recent --name scan_port --update --seconds 600 --hitcount 20 -j DROP
+
+iptables -A INPUT -m recent --name scan_port --set -j ACCEPT
+
+iptables -A FORWARD -m recent --name scan_port --set -j ACCEPT
+```
+
+
+### Testing
+Lalu, untuk melakukan testing pada client, kita dapat menjalankan code berikut.
+
+```bash
+for i in {1..25}; do
+  echo $i
+  nmap -p 80 -T2 -sS 192.177.8.2
+  sleep 3
+done
+```
+
+Namun, dengan menggunakan testing ini, kita akan mencapai batas hitpoint dengan lebih cepat, sifat dari nmap dapat ditentukan dan untuk mencapai tepat 20 nmap scan dengan 20 hitpoint, kita perlu memakai konfigurasi T1 (T0-5 semakin rendah semakin lambat). Hal ini akan memakan waktu yang sangat banyak. Oleh karena itu, kita dapat juga melakukan testing dengan ping IP dari webserver tersebut, seperti berikut:
+
+![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/d81f6d74-8e55-4d04-b075-a75764787d9b)
+
+### No 10
+Karena kepala suku ingin tau paket apa saja yang di-drop, maka di setiap node server dan router ditambahkan logging paket yang di-drop dengan standard syslog level.
+
+### Answer
+Untuk menyelesaikan soal nomor 10 dapat digunakan syntax berikut, setup di Heiter dan Sein
+
+```bash
+iptables -A INPUT  -j LOG --log-level debug --log-prefix 'Dropped Packet' -m limit --limit 1/second --limit-burst 10
+```
+
+### Desctiption
+
+`-A INPUT`: Menambahkan aturan pada chain INPUT (penerimaan paket masuk).
+`-j LOG`: Menunjukkan bahwa paket yang memenuhi kriteria akan dicatat (log).
+`--log-level debug`: Menentukan level log sebagai "debug". Level log ini menunjukkan tingkat detail yang tinggi dalam pencatatan, sehingga mencakup lebih banyak informasi.
+`--log-prefix 'Dropped Packet'`: Menentukan awalan pesan log yang akan ditambahkan ke setiap entri log. Dalam hal ini, pesan log akan dimulai dengan teks "Dropped Packet".
+`-m limit --limit 1/second --limit-burst 10`: Menggunakan modul limit untuk mengontrol seberapa sering log akan dihasilkan.
+`--limit 1/second`: Membatasi pencatatan hingga satu entri per detik.
+`--limit-burst 10`: Memperbolehkan 10 entri log dalam satu "burst" jika batas tercapai.
+
+### Testing
+Berikut adalah hasil dari test syntax yang telah dijalankan:
+
+![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/bf685a0a-ee31-43fd-b321-5c29260a9f84)
+
+
+![image](https://github.com/RuleLuluDamara/Jarkom-Modul-5-A13-2023/assets/105763198/fbace2ad-f003-4691-bf59-fd10c76a02e4)
+
+## Kendala Saat Pengerjaan
+- Koneksi yang tiba-tiba terputus 
+- Tidak Teliti
